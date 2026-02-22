@@ -316,22 +316,21 @@ void SPR_AdjustSize( float *x, float *y, float *w, float *h )
 
 static void SPR_AdjustTexCoords( int texnum, float width, float height, float *s1, float *t1, float *s2, float *t2 )
 {
-	const qboolean filtering = REF_GET_PARM( PARM_TEX_FILTERING, texnum );
-	const int xremainder = refState.width % clgame.scrInfo.iWidth;
-	const int yremainder = refState.height % clgame.scrInfo.iHeight;
-
-	if(( filtering || xremainder ) && refState.width != clgame.scrInfo.iWidth )
+	if( REF_GET_PARM( PARM_TEX_FILTERING, texnum ))
 	{
-		// align to texel if scaling
-		*s1 += 0.5f;
-		*s2 -= 0.5f;
-	}
+		if( refState.width != clgame.scrInfo.iWidth )
+		{
+			// align to texel if scaling
+			*s1 += 0.5f;
+			*s2 -= 0.5f;
+		}
 
-	if(( filtering || yremainder ) && refState.height != clgame.scrInfo.iHeight )
-	{
-		// align to texel if scaling
-		*t1 += 0.5f;
-		*t2 -= 0.5f;
+		if( refState.height != clgame.scrInfo.iHeight )
+		{
+			// align to texel if scaling
+			*t1 += 0.5f;
+			*t2 -= 0.5f;
+		}
 	}
 
 	*s1 /= width;
@@ -414,7 +413,8 @@ void CL_DrawCenterPrint( void )
 	char	*pText;
 	int	i, j, x, y;
 	int	width, lineLength;
-	byte	*colorDefault, line[MAX_LINELENGTH];
+	byte	*colorDefault;
+	int line[MAX_LINELENGTH];
 	int	charWidth, charHeight;
 
 	if( !clgame.centerPrint.time )
@@ -1719,12 +1719,7 @@ int GAME_EXPORT CL_GetScreenInfo( SCREENINFO *pscrinfo )
 	clgame.scrInfo.iSize = sizeof( clgame.scrInfo );
 	clgame.scrInfo.iFlags = SCRINFO_SCREENFLASH;
 
-	if( hud_scale.value >= 320.0f && hud_scale.value >= hud_scale_minimal_width.value )
-	{
-		scale_factor = refState.width / hud_scale.value;
-		apply_scale_factor = scale_factor > 1.0f;
-	}
-	else if( scale_factor && scale_factor != 1.0f )
+	if( scale_factor && scale_factor != 1.0f )
 	{
 		float scaled_width = (float)refState.width / scale_factor;
 		if( scaled_width >= hud_scale_minimal_width.value )
@@ -2007,6 +2002,7 @@ static int GAME_EXPORT pfnDrawCharacter( int x, int y, int number, int r, int g,
 	if( hud_utf8.value )
 		flags |= FONT_DRAW_UTF8;
 
+	//we should change game client dll to process utf8 characters, not process them here
 	return CL_DrawCharacter( x, y, number, color, &cls.creditsFont, flags );
 }
 
@@ -3454,7 +3450,7 @@ static void GAME_EXPORT NetAPI_SendRequest( int context, int request, int flags,
 		return;
 	}
 
-	if( NET_NetadrType( remote_address ) == NA_IPX || NET_NetadrType( remote_address ) == NA_BROADCAST_IPX )
+	if( remote_address->type == NA_IPX || remote_address->type == NA_BROADCAST_IPX )
 		return; // IPX no longer support
 
 	if( request == NETAPI_REQUEST_SERVERLIST )
