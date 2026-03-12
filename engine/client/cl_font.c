@@ -17,12 +17,11 @@ GNU General Public License for more details.
 #include "filesystem.h"
 #include "client.h"
 #include "qfont.h"
-#include "cl_font.h"
-
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_STATIC
-#define FONT_COUNT 2
+#include "cl_font.h"
 
+#define FONT_COUNT 2
 static Font g_Fonts[FONT_COUNT];
 static const char* g_FontsPath[FONT_COUNT] = { "gfx/fonts/tahoma.ttf", "gfx/fonts/FiraSans-Regular.ttf" };
 static int g_FontsSize[FONT_COUNT] = { 13, 13 };
