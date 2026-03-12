@@ -35,6 +35,7 @@ GNU General Public License for more details.
 #include "vgui_draw.h"
 #include "sound.h"		// SND_STOP_LOOPING
 #include "platform/platform.h"
+#include "utflib.h"
 
 #define MAX_LINELENGTH	80
 #define MAX_TEXTCHANNELS	8		// must be power of two (GoldSrc uses 4 channels)
@@ -2001,7 +2002,13 @@ static int GAME_EXPORT pfnDrawCharacter( int x, int y, int number, int r, int g,
 	int flags = FONT_DRAW_HUD;
 
 	if( hud_utf8.value )
-		flags |= FONT_DRAW_UTF8;
+	{
+		static utfstate_t utfstate;
+		number = Q_DecodeUTF8( &utfstate, number );
+
+		if( !number )
+			return 0;
+	}
 
 	return CL_DrawCharacter( x, y, number, color, &cls.creditsFont, flags );
 }
