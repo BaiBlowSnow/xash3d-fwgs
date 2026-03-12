@@ -264,7 +264,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 
 		// skip setting rendermode, it was changed for this string already
 		if( ch )
-			draw_len += CL_DrawCharacter( x + draw_len, y, ch, current_color, font, flags | FONT_DRAW_NORENDERMODE );
+			draw_len += CL_DrawCharacter( x + draw_len, y, ch, NULL, font, flags);
 
 		s++;
 	}
