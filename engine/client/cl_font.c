@@ -507,23 +507,7 @@ int Font_DrawChar(cl_font_t *font,const rgba_t color, int x, int y, int number, 
 	if( FBitSet( flags, FONT_DRAW_HUD ))
 		SPR_AdjustSize( &new_x, &new_y, &new_w, &new_h );
 
-	if( font->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, font->hFontTexture ) == 0x8045 ) // GL_LUMINANCE8_ALPHA8
-	{
-		//outline
- 		ref.dllFuncs.Color4ub( 1, 1, 1, 128 );
-		ref.dllFuncs.R_DrawStretchPic( new_x + 2, new_y + 1, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-		//normal
-		ref.dllFuncs.Color4ub( color[0], color[1], color[2], color[3] );
-		ref.dllFuncs.R_DrawStretchPic(new_x, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-		//bold
-		ref.dllFuncs.R_DrawStretchPic(new_x + 1, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-
-	}
-	else
-	{
- 		ref.dllFuncs.Color4ub( 255, 255, 255, color[3] );
-		ref.dllFuncs.R_DrawStretchPic( new_x + pCharInfo->m_iXOff, y + pCharInfo->m_iYOff, pCharInfo->m_iWidth, pCharInfo->m_iHeight, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-	}
+	CL_SetFontColor( font, color );
 
 	return (pCharInfo->m_iXOff + pCharInfo->m_iWidth) * font->scale;
 	
