@@ -53,7 +53,7 @@ static int CL_LoadFontTexture( const char *fontname, uint texFlags, int *width )
 	}
 
 	*width = font_width;
-	
+
 	for (int i = 0; i < FONT_COUNT; i++)
 	{
 		if (!Font_Init( &g_Fonts[i], g_FontsPath[i], g_FontsSize[i] ))
@@ -202,7 +202,7 @@ int CL_DrawCharacter( float x, float y, int number, const rgba_t color, cl_font_
 }
 
 int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_t *font, int flags )
-{	
+{
 	rgba_t current_color;
 	int draw_len = 0;
 	int ch = 0;
@@ -235,7 +235,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 			}
 
 			if( FBitSet( flags, FONT_DRAW_RESETCOLORONLF ))
-				Vector4Copy( color, current_color );
+				 Vector4Copy( color, current_color );
 			continue;
 		}
 
@@ -248,12 +248,12 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 			s += 2;
 			continue;
 		}
-		
+
 		ch = Con_UtfProcessChar( (unsigned char)*s );
 
 		// skip setting rendermode, it was changed for this string already
 		if( ch )
-			draw_len += CL_DrawCharacter( x + draw_len, y, (byte)*s, current_color, font, flags | FONT_DRAW_NORENDERMODE );
+			draw_len += CL_DrawCharacter( x + draw_len, y, ch, current_color, font, flags | FONT_DRAW_NORENDERMODE );
 
 		s++;
 	}
@@ -352,7 +352,6 @@ void CL_DrawStringLen( cl_font_t *font, const char *s, int *width, int *height, 
 		s++;
 	}
 }
-
 
 /* Font Class */
 
@@ -507,6 +506,7 @@ int Font_DrawChar(cl_font_t *font,const rgba_t color, int x, int y, int number, 
 		ref.dllFuncs.R_DrawStretchPic(new_x, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
 		//bold
 		ref.dllFuncs.R_DrawStretchPic(new_x + 1, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
+
 	}
 	else
 	{

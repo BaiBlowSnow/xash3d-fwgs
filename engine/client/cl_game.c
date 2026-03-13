@@ -584,7 +584,7 @@ static void CL_InitTitles( const char *filename )
 	pMemFile = FS_LoadFile( filename, &fileSize, false );
 	if( !pMemFile ) return;
 
-	CL_TextMessageParse( pMemFile, fileSize );
+	clgame.titles = CL_TextMessageParse( clgame.mempool, pMemFile, fileSize, &clgame.numTitles );
 	Mem_Free( pMemFile );
 }
 
@@ -2009,7 +2009,6 @@ static int GAME_EXPORT pfnDrawCharacter( int x, int y, int number, int r, int g,
 			return 0;
 	}
 
-	//we should change game client dll to process utf8 characters, not process them here
 	return CL_DrawCharacter( x, y, number, color, &cls.creditsFont, flags );
 }
 
@@ -3221,7 +3220,8 @@ handle colon separately
 */
 static char *pfnParseFile( char *data, char *token )
 {
-	return COM_ParseFileSafe( data, token, PFILE_TOKEN_MAX_LENGTH, PFILE_HANDLECOLON, NULL, NULL );
+	// GoldSrc uses 1024 byte tokens
+	return COM_ParseFileSafe( data, token, 1024, PFILE_HANDLECOLON, NULL, NULL );
 }
 
 /*
