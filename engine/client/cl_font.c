@@ -91,15 +91,6 @@ void CL_SetFontRendermode( cl_font_t *font )
 	ref.dllFuncs.GL_SetRenderMode( CL_FontRenderMode( font->rendermode ));
 }
 
-void CL_SetFontColor( cl_font_t *font, const rgba_t color )
-{	
-	// don't apply color to fixed fonts it's already colored
-	if( font->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, font->hFontTexture ) == 0x8045 ) // GL_LUMINANCE8_ALPHA8
-		ref.dllFuncs.Color4ub( color[0], color[1], color[2], color[3] );
-	else
-		ref.dllFuncs.Color4ub( 255, 255, 255, color[3] );
-}
-
 qboolean Con_LoadFixedWidthFont( const char *fontname, cl_font_t *font, float scale, convar_t *rendermode, uint texFlags )
 {
 	int font_width, i;
@@ -211,7 +202,8 @@ int CL_DrawCharacter( float x, float y, int number, const rgba_t color, cl_font_
 }
 
 int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_t *font, int flags )
-{
+{	
+	rgba_t current_color;
 	int draw_len = 0;
 	int ch = 0;
 
@@ -224,9 +216,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 	if( !FBitSet( flags, FONT_DRAW_NORENDERMODE ))
 		CL_SetFontRendermode( font );
 
-	CL_SetFontColor( font, color );
-
-	SetBits( flags, FONT_DRAW_NOCOLOR | FONT_DRAW_NORENDERMODE );
+	Vector4Copy( color, current_color );
 
 	while( *s )
 	{
@@ -245,7 +235,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 			}
 
 			if( FBitSet( flags, FONT_DRAW_RESETCOLORONLF ))
-				 CL_SetFontColor( font, color );
+				Vector4Copy( color, current_color );
 			continue;
 		}
 
@@ -253,7 +243,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 		{
 			// don't copy alpha
 			if( !FBitSet( flags, FONT_DRAW_FORCECOL ))
-				CL_SetFontColor( font, g_color_table[ColorIndex(*( s + 1 ))] );
+				VectorCopy( g_color_table[ColorIndex(*( s + 1 ))], current_color );
 
 			s += 2;
 			continue;
@@ -263,7 +253,7 @@ int CL_DrawString( float x, float y, const char *s, const rgba_t color, cl_font_
 
 		// skip setting rendermode, it was changed for this string already
 		if( ch )
-			draw_len += CL_DrawCharacter( x + draw_len, y, ch, NULL, font, flags);
+			draw_len += CL_DrawCharacter( x + draw_len, y, (byte)*s, current_color, font, flags | FONT_DRAW_NORENDERMODE );
 
 		s++;
 	}
@@ -507,7 +497,6 @@ int Font_DrawChar(cl_font_t *font,const rgba_t color, int x, int y, int number, 
 	if( FBitSet( flags, FONT_DRAW_HUD ))
 		SPR_AdjustSize( &new_x, &new_y, &new_w, &new_h );
 
-	/*
 	if( font->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, font->hFontTexture ) == 0x8045 ) // GL_LUMINANCE8_ALPHA8
 	{
 		//outline
@@ -523,25 +512,6 @@ int Font_DrawChar(cl_font_t *font,const rgba_t color, int x, int y, int number, 
 	{
  		ref.dllFuncs.Color4ub( 255, 255, 255, color[3] );
 		ref.dllFuncs.R_DrawStretchPic( new_x + pCharInfo->m_iXOff, y + pCharInfo->m_iYOff, pCharInfo->m_iWidth, pCharInfo->m_iHeight, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-	}
-	*/
-	if( !FBitSet( flags, FONT_DRAW_NOCOLOR )){
-		if( font->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, font->hFontTexture ) == 0x8045 ) // GL_LUMINANCE8_ALPHA8
-		{
-			//outline
-			ref.dllFuncs.Color4ub( 1, 1, 1, 128 );
-			ref.dllFuncs.R_DrawStretchPic( new_x + 2, new_y + 1, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-			//normal
-			ref.dllFuncs.Color4ub( color[0], color[1], color[2], color[3] );
-			ref.dllFuncs.R_DrawStretchPic(new_x, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-			//bold
-			ref.dllFuncs.R_DrawStretchPic(new_x + 1, new_y, new_w, new_h, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-		}
-		else
-		{
-			ref.dllFuncs.Color4ub( 255, 255, 255, color[3] );
-			ref.dllFuncs.R_DrawStretchPic( new_x + pCharInfo->m_iXOff, y + pCharInfo->m_iYOff, pCharInfo->m_iWidth, pCharInfo->m_iHeight, 0.0f, 0.0f, 1.0f, 1.0f, pCharInfo->m_iTexture);
-		}
 	}
 
 	return (pCharInfo->m_iXOff + pCharInfo->m_iWidth) * font->scale;
